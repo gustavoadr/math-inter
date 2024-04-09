@@ -76,9 +76,15 @@ public class MathEvaluator
         List<string> tokens = new List<string>();
         string currentToken = "";
 
-        foreach (char c in expression)
+        for (int i = 0; i < expression.Length; i++)
         {
-            if (c == '(' || c == ')' || binaryOperations.ContainsKey(c))
+            char c = expression[i];
+
+            if (c == '-' || c == '+' && (i == 0 || expression[i - 1] == '(' || binaryOperations.ContainsKey(expression[i - 1])))
+            {
+                currentToken += c;
+            }
+            else if (c == '(' || c == ')' || binaryOperations.ContainsKey(c))
             {
                 if (currentToken != "")
                 {

@@ -4,7 +4,7 @@ public class Program
 {
     static void Main()
     {
-        string expression = "cos(-3.14)"; // Example expression
+        string expression = "cos(-3.14)";
         var evaluator = new MathEvaluator(expression);
         var result = evaluator.Evaluate();
         Console.WriteLine($"Result of expression '{expression}': {result}");
