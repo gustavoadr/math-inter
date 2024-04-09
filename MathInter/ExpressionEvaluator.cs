@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+
 public class ExpressionEvaluator
 {
     // Delegate for unary operations
@@ -7,13 +11,13 @@ public class ExpressionEvaluator
     public delegate double BinaryOperation(double operand1, double operand2);
 
     // Dictionary to map operators to their corresponding binary operations
-    private readonly Dictionary<string, BinaryOperation> binaryOperations = new Dictionary<string, BinaryOperation>
+    private readonly Dictionary<char, BinaryOperation> binaryOperations = new Dictionary<char, BinaryOperation>
     {
-        {"+", (x, y) => x + y},
-        {"-", (x, y) => x - y},
-        {"*", (x, y) => x * y},
-        {"/", (x, y) => x / y},
-        {"^", Math.Pow}
+        {'+', (x, y) => x + y},
+        {'-', (x, y) => x - y},
+        {'*', (x, y) => x * y},
+        {'/', (x, y) => x / y},
+        {'^', Math.Pow}
     };
 
     // Dictionary to map functions to their corresponding unary operations
@@ -27,7 +31,7 @@ public class ExpressionEvaluator
     public double Evaluate(string expression)
     {
         // Parse the expression into tokens
-        string[] tokens = expression.Split(' ');
+        List<string> tokens = Tokenize(expression);
 
         // Stack to hold operands and operators
         Stack<double> operands = new Stack<double>();
@@ -35,7 +39,7 @@ public class ExpressionEvaluator
 
         foreach (string token in tokens)
         {
-            if (double.TryParse(token, out double number))
+            if (double.TryParse(token, NumberStyles.Any, CultureInfo.InvariantCulture, out double number))
             {
                 // If token is a number, push it onto the operand stack
                 operands.Push(number);
@@ -63,10 +67,10 @@ public class ExpressionEvaluator
                     throw new ArgumentException("Invalid expression: mismatched parentheses");
                 }
             }
-            else if (binaryOperations.ContainsKey(token))
+            else if (binaryOperations.ContainsKey(token[0]))
             {
                 // If token is a binary operator, evaluate higher precedence operators and push the current operator onto the stack
-                while (operators.Count > 0 && Precedence(token) <= Precedence(operators.Peek()))
+                while (operators.Count > 0 && Precedence(token[0]) <= Precedence(operators.Peek()[0]))
                 {
                     EvaluateOperation(operands, operators);
                 }
@@ -101,6 +105,45 @@ public class ExpressionEvaluator
         }
     }
 
+    // Method to tokenize the expression
+    private List<string> Tokenize(string expression)
+    {
+        List<string> tokens = new List<string>();
+        string currentToken = "";
+
+        foreach (char c in expression)
+        {
+            if (c == '(' || c == ')' || binaryOperations.ContainsKey(c))
+            {
+                if (currentToken != "")
+                {
+                    tokens.Add(currentToken);
+                    currentToken = "";
+                }
+                tokens.Add(c.ToString());
+            }
+            else if (char.IsWhiteSpace(c))
+            {
+                if (currentToken != "")
+                {
+                    tokens.Add(currentToken);
+                    currentToken = "";
+                }
+            }
+            else
+            {
+                currentToken += c;
+            }
+        }
+
+        if (currentToken != "")
+        {
+            tokens.Add(currentToken);
+        }
+
+        return tokens;
+    }
+
     // Method to evaluate an operation and push the result onto the operand stack
     private void EvaluateOperation(Stack<double> operands, Stack<string> operators)
     {
@@ -109,32 +152,32 @@ public class ExpressionEvaluator
             throw new ArgumentException("Invalid expression");
         }
 
-        double operand2 = operands.Pop();
-        double operand1 = operands.Pop();
+        string op = operators.Pop();
 
-        if (operators.Peek() == "(")
+        if (op == "(")
         {
-            operators.Pop(); // Remove '(' from the operator stack
             return;
         }
 
-        if (operators.Peek() == ")")
+        if (op == ")")
         {
             throw new ArgumentException("Invalid expression");
         }
 
-        string op = operators.Pop();
-
-        if (binaryOperations.ContainsKey(op))
+        if (binaryOperations.ContainsKey(op[0]))
         {
-            BinaryOperation operation = binaryOperations[op];
+            BinaryOperation operation = binaryOperations[op[0]];
+            
+            double operand2 = operands.Pop();
+            double operand1 = operands.Pop();
+            
             double result = operation(operand1, operand2);
             operands.Push(result);
         }
-        else if (unaryOperations.ContainsKey(op.ToString()))
+        else if (unaryOperations.ContainsKey(op))
         {
-            UnaryOperation operation = unaryOperations[op.ToString()];
-            double result = operation(operand2); // Assuming unary functions like sin and cos operate on the second operand
+            UnaryOperation operation = unaryOperations[op];
+            double result = operation(operands.Pop()); // Assuming unary functions like sin and cos operate on the second operand
             operands.Push(result);
         }
         else
@@ -144,17 +187,17 @@ public class ExpressionEvaluator
     }
 
     // Method to determine the precedence of an operator
-    private int Precedence(string op)
+    private int Precedence(char op)
     {
         switch (op)
         {
-            case "+":
-            case "-":
+            case '+':
+            case '-':
                 return 1;
-            case "*":
-            case "/":
+            case '*':
+            case '/':
                 return 2;
-            case "^":
+            case '^':
                 return 3;
             default:
                 return 0;
