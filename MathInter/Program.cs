@@ -1,2 +1,10 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿public class Program
+{
+    static void Main(string[] args)
+    {
+        ExpressionEvaluator evaluator = new ExpressionEvaluator();
+        string expression = "sin(0.5) + 2 * cos(0.3)"; // Example expression
+        double result = evaluator.Evaluate(expression);
+        Console.WriteLine($"Result of expression '{expression}': {result}");
+    }
+}
