@@ -1,9 +1,11 @@
-﻿public class Program
+﻿using MathInter;
+
+public class Program
 {
     static void Main()
     {
-        string expression = "sin(0.5)-2*cos(0.3)"; // Example expression
-        var evaluator = new ExpressionEvaluator(expression);
+        string expression = "cos(-3.14)"; // Example expression
+        var evaluator = new MathEvaluator(expression);
         var result = evaluator.Evaluate();
         Console.WriteLine($"Result of expression '{expression}': {result}");
     }

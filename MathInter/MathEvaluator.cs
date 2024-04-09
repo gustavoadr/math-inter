@@ -1,28 +1,15 @@
 using System.Globalization;
+using static MathInter.MathOperations;
 
-public class ExpressionEvaluator
+namespace MathInter;
+
+public class MathEvaluator
 {
     private string Expression {get; set;}
-    public delegate double UnaryOperation(double operand);
-    public delegate double BinaryOperation(double operand1, double operand2);
+    private readonly Dictionary<char, BinaryOperation> binaryOperations = MathExpressions.binaryOperations;
+    private readonly Dictionary<string, UnaryOperation> unaryOperations = MathExpressions.unaryOperations;
 
-    private readonly Dictionary<char, BinaryOperation> binaryOperations = new Dictionary<char, BinaryOperation>
-    {
-        {'+', (x, y) => x + y},
-        {'-', (x, y) => x - y},
-        {'*', (x, y) => x * y},
-        {'/', (x, y) => x / y},
-        {'^', Math.Pow}
-    };
-
-    // Dictionary to map functions to their corresponding unary operations
-    private readonly Dictionary<string, UnaryOperation> unaryOperations = new Dictionary<string, UnaryOperation>
-    {
-        {"sin", Math.Sin},
-        {"cos", Math.Cos}
-    };
-
-    public ExpressionEvaluator(string expression)
+    public MathEvaluator(string expression)
     {
         Expression = expression;
     }
@@ -62,7 +49,7 @@ public class ExpressionEvaluator
             else if (binaryOperations.ContainsKey(token[0]))
             {
                 // If token is a binary operator, evaluate higher precedence operators and push the current operator onto the stack
-                while (operators.Count > 0 && Precedence(token[0]) <= Precedence(operators.Peek()[0]))
+                while (operators.Count > 0 && MathExpressions.Precedence(token[0]) <= MathExpressions.Precedence(operators.Peek()[0]))
                     EvaluateOperation(operands, operators);
 
                 operators.Push(token);
@@ -84,7 +71,6 @@ public class ExpressionEvaluator
             throw new ArgumentException("Invalid expression");
     }
 
-    // Method to tokenize the expression
     private List<string> Tokenize(string expression)
     {
         List<string> tokens = new List<string>();
@@ -119,7 +105,6 @@ public class ExpressionEvaluator
         return tokens;
     }
 
-    // Method to evaluate an operation and push the result onto the operand stack
     private void EvaluateOperation(Stack<double> operands, Stack<string> operators)
     {
         if (operands.Count < 1 || operators.Count == 0)
@@ -157,22 +142,5 @@ public class ExpressionEvaluator
         }
         else
             throw new ArgumentException($"Invalid operator or function: {op}");
-    }
-
-    private int Precedence(char op)
-    {
-        switch (op)
-        {
-            case '+':
-            case '-':
-                return 1;
-            case '*':
-            case '/':
-                return 2;
-            case '^':
-                return 3;
-            default:
-                return 0;
-        }
     }
 }
