@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 public class ExpressionEvaluator
@@ -147,7 +145,7 @@ public class ExpressionEvaluator
     // Method to evaluate an operation and push the result onto the operand stack
     private void EvaluateOperation(Stack<double> operands, Stack<string> operators)
     {
-        if (operands.Count < 2 || operators.Count == 0)
+        if (operands.Count < 1 || operators.Count == 0)
         {
             throw new ArgumentException("Invalid expression");
         }
@@ -164,20 +162,32 @@ public class ExpressionEvaluator
             throw new ArgumentException("Invalid expression");
         }
 
-        if (binaryOperations.ContainsKey(op[0]))
+        if (unaryOperations.ContainsKey(op))
         {
-            BinaryOperation operation = binaryOperations[op[0]];
-            
-            double operand2 = operands.Pop();
-            double operand1 = operands.Pop();
-            
-            double result = operation(operand1, operand2);
+            // Unary operation
+            double operand = operands.Pop();
+            UnaryOperation operation = unaryOperations[op];
+            double result = operation(operand);
             operands.Push(result);
         }
-        else if (unaryOperations.ContainsKey(op))
+        else if (binaryOperations.ContainsKey(op[0]))
         {
-            UnaryOperation operation = unaryOperations[op];
-            double result = operation(operands.Pop()); // Assuming unary functions like sin and cos operate on the second operand
+            // Binary operation
+            if (operands.Count < 2)
+            {
+                throw new ArgumentException("Invalid expression");
+            }
+
+            double operand2 = operands.Pop();
+            // Check if there are unary operations pending and evaluate them first
+            while (operators.Count > 0 && unaryOperations.ContainsKey(operators.Peek()))
+            {
+                EvaluateOperation(operands, operators);
+            }
+            
+            double operand1 = operands.Pop();
+            BinaryOperation operation = binaryOperations[op[0]];
+            double result = operation(operand1, operand2);
             operands.Push(result);
         }
         else
