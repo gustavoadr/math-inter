@@ -80,7 +80,7 @@ public class MathEvaluator
         {
             char c = expression[i];
 
-            if (c == '-' || c == '+' && (i == 0 || expression[i - 1] == '(' || binaryOperations.ContainsKey(expression[i - 1])))
+            if ((c == '-' || c == '+') && (i == 0 || expression[i - 1] == '(' || binaryOperations.ContainsKey(expression[i - 1])))
             {
                 currentToken += c;
             }
