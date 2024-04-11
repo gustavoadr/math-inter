@@ -1,21 +1,32 @@
+using System.ComponentModel;
+
 namespace MathInter;
 
 public static class MathExpressions
 {
-    public static readonly Dictionary<char, MathOperations.BinaryOperation> binaryOperations = new Dictionary<char, MathOperations.BinaryOperation>
+    public static readonly Dictionary<string, MathOperations.BinaryOperation> binaryOperations = new Dictionary<string, MathOperations.BinaryOperation>
     {
-        {'+', MathOperations.Add},
-        {'-', MathOperations.Subtract},
-        {'*', MathOperations.Multiply},
-        {'/', MathOperations.Divide},
-        {'^', MathOperations.Power}
+        {"+", MathOperations.Add},
+        {"-", MathOperations.Subtract},
+        {"*", MathOperations.Multiply},
+        {"/", MathOperations.Divide},
+        {"^", MathOperations.Power},
     };
 
-    public static readonly Dictionary<string, MathOperations.UnaryOperation> unaryOperations = new Dictionary<string, MathOperations.UnaryOperation>
+    public static readonly Dictionary<string, FunctionOperation> functionOperations;
+
+    static MathExpressions()
     {
-        {"sin", MathOperations.Sin},
-        {"cos", MathOperations.Cos}
-    };
+        functionOperations = new ();
+        
+        Add(new Sen());
+        Add(new Cos());
+    }
+
+    public static void Add(FunctionOperation functionOperation)
+    {
+        functionOperations.Add(functionOperation.GetName(), functionOperation);
+    }
 
     public static int Precedence(char op)
     {

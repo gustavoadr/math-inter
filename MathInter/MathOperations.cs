@@ -2,7 +2,6 @@ namespace MathInter;
 
 public class MathOperations
 {
-    public delegate double UnaryOperation(double operand);
     public delegate double BinaryOperation(double operand1, double operand2);
 
     public static double Sin(double operand)
@@ -15,7 +14,6 @@ public class MathOperations
         return Math.Cos(operand);
     }
 
-    // Binary operations
     public static double Add(double operand1, double operand2)
     {
         return operand1 + operand2;
@@ -39,6 +37,11 @@ public class MathOperations
     public static double Power(double baseValue, double exponent)
     {
         return Math.Pow(baseValue, exponent);
+    }
+
+    public static double Log(double value, double baseValue = 10)
+    {
+        return Math.Log(value, baseValue);
     }
 }
 

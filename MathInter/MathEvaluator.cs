@@ -6,8 +6,8 @@ namespace MathInter;
 public class MathEvaluator
 {
     private string Expression {get; set;}
-    private readonly Dictionary<char, BinaryOperation> binaryOperations = MathExpressions.binaryOperations;
-    private readonly Dictionary<string, UnaryOperation> unaryOperations = MathExpressions.unaryOperations;
+    private readonly Dictionary<string, BinaryOperation> binaryOperations = MathExpressions.binaryOperations;
+    private readonly Dictionary<string, FunctionOperation> functionOperations = MathExpressions.functionOperations;
 
     public MathEvaluator(string expression)
     {
@@ -46,7 +46,7 @@ public class MathEvaluator
                 else
                     throw new ArgumentException("Invalid expression: mismatched parentheses");
             }
-            else if (binaryOperations.ContainsKey(token[0]))
+            else if (binaryOperations.ContainsKey(token))
             {
                 // If token is a binary operator, evaluate higher precedence operators and push the current operator onto the stack
                 while (operators.Count > 0 && MathExpressions.Precedence(token[0]) <= MathExpressions.Precedence(operators.Peek()[0]))
@@ -54,7 +54,7 @@ public class MathEvaluator
 
                 operators.Push(token);
             }
-            else if (unaryOperations.ContainsKey(token))
+            else if (functionOperations.ContainsKey(token))
             {
                 operators.Push(token);
             }
@@ -80,11 +80,11 @@ public class MathEvaluator
         {
             char c = expression[i];
 
-            if ((c == '-' || c == '+') && (i == 0 || expression[i - 1] == '(' || binaryOperations.ContainsKey(expression[i - 1])))
+            if ((c == '-' || c == '+') && (i == 0 || expression[i - 1] == '(' || binaryOperations.ContainsKey(expression[i - 1].ToString())))
             {
                 currentToken += c;
             }
-            else if (c == '(' || c == ')' || binaryOperations.ContainsKey(c))
+            else if (c == '(' || c == ')' || binaryOperations.ContainsKey(c.ToString()))
             {
                 if (currentToken != "")
                 {
@@ -93,7 +93,7 @@ public class MathEvaluator
                 }
                 tokens.Add(c.ToString());
             }
-            else if (char.IsWhiteSpace(c))
+            else if (char.IsWhiteSpace(c) || c == ',')
             {
                 if (currentToken != "")
                 {
@@ -124,13 +124,13 @@ public class MathEvaluator
         if (op == ")")
             throw new ArgumentException("Invalid expression");
 
-        if (unaryOperations.ContainsKey(op))
+        if (functionOperations.ContainsKey(op))
         {
-            UnaryOperation operation = unaryOperations[op];
-            var result = operation(operands.Pop());
+            FunctionOperation operation = functionOperations[op];
+            var result = operation.Process(new object[] {operands.Pop()});
             operands.Push(result);
         }
-        else if (binaryOperations.ContainsKey(op[0]))
+        else if (binaryOperations.ContainsKey(op[0].ToString()))
         {
             if (operands.Count < 2)
                 throw new ArgumentException("Invalid expression");
@@ -138,11 +138,11 @@ public class MathEvaluator
             var operand2 = operands.Pop();
             
             // Check if there are unary operations pending and evaluate them first
-            while (operators.Count > 0 && unaryOperations.ContainsKey(operators.Peek()))
+            while (operators.Count > 0 && functionOperations.ContainsKey(operators.Peek()))
                 EvaluateOperation(operands, operators);
             
             var operand1 = operands.Pop();
-            BinaryOperation operation = binaryOperations[op[0]];
+            BinaryOperation operation = binaryOperations[op[0].ToString()];
             var result = operation(operand1, operand2);
             operands.Push(result);
         }
