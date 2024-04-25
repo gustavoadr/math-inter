@@ -4,39 +4,26 @@ namespace MathInter;
 
 public static class MathExpressions
 {
-    public static readonly Dictionary<string, MathOperations.BinaryOperation> binaryOperations = new Dictionary<string, MathOperations.BinaryOperation>
-    {
-        {"+", MathOperations.Add},
-        {"-", MathOperations.Subtract},
-        {"*", MathOperations.Multiply},
-        {"/", MathOperations.Divide},
-        {"^", MathOperations.Power},
-    };
-
     public static readonly Dictionary<string, FunctionOperation> functionOperations;
+    public static readonly Dictionary<string, int> precedence;
 
     static MathExpressions()
     {
         functionOperations = new ();
         
+        Add(new Add());
+        Add(new Subtract());
+        Add(new Multiply());
+        Add(new Divide());
+        Add(new Power());
+
         Add(new Sen());
         Add(new Cos());
+        Add(new Log());
     }
 
     public static void Add(FunctionOperation functionOperation)
     {
         functionOperations.Add(functionOperation.GetName(), functionOperation);
-    }
-
-    public static int Precedence(char op)
-    {
-        return op switch
-        {
-            '+' or '-' => 1,
-            '*' or '/' => 2,
-            '^' => 3,
-            _ => 0,
-        };
-
     }
 }
