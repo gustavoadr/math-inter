@@ -258,4 +258,33 @@ namespace MathInter
             return "log";
         }
     }
+
+    public class Dot : FunctionOperation
+    {
+        public object Process(object[] parametros)
+        {
+            if (parametros.Length != 2)
+                throw new ArgumentException("A operação com pontos requer exatamento dois parametros.");
+
+            if (!(parametros[0] is double))
+                throw new ArgumentException("O parâmetro deve ser do tipo double para a operação cosseno.");
+
+            return Math.Cos((double)parametros[0]);
+        }
+
+        public int NParam()
+        {
+            return 2;
+        }
+
+        public int Precedence()
+        {
+            return 5;
+        }
+
+        public string GetName()
+        {
+            return ".";
+        }
+    }
 }
