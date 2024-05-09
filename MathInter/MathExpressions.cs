@@ -20,6 +20,7 @@ public static class MathExpressions
         Add(new Sen());
         Add(new Cos());
         Add(new Log());
+        Add(new Dot());
 
         // Add(new Count());
     }

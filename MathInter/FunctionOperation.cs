@@ -14,20 +14,16 @@ namespace MathInter
         {
             if (parametros.Length != 2)
                 throw new ArgumentException("A operação de adição requer exatamente dois parâmetros.");
-
-            if (parametros[0] is string || parametros[1] is string)
+            
+            try
             {
-                // Se pelo menos um dos parâmetros for uma string, realiza a concatenação de strings
-                return parametros[0].ToString() + parametros[1].ToString();
+                return Convert.ToDouble(parametros[0]) + Convert.ToDouble(parametros[1]);
             }
-            else if (parametros[0] is double && parametros[1] is double)
+            catch
             {
-                // Se ambos os parâmetros forem números, realiza a adição
-                return (double)parametros[0] + (double)parametros[1];
-            }
-            else
-            {
-                throw new ArgumentException("Pelo menos um dos parâmetros deve ser do tipo string para realizar a concatenação, ou ambos devem ser do tipo double para realizar a adição.");
+                var par1 = parametros[0].ToString().Replace("\"", "");
+                var par2 = parametros[1].ToString().Replace("\"", "");
+                return par1+par2;
             }
         }
 
@@ -234,8 +230,8 @@ namespace MathInter
             if (!(parametros[0] is double) || !(parametros[1] is double))
                 throw new ArgumentException("Ambos os parâmetros devem ser do tipo double para a operação de logaritmo.");
 
-            double baseValue = (double)parametros[0];
-            double number = (double)parametros[1];
+            double number = (double)parametros[0];
+            double baseValue = (double)parametros[1];
 
             if (baseValue <= 0 || baseValue == 1 || number <= 0)
                 throw new ArgumentException("O logaritmo só é definido para números positivos e a base do logaritmo deve ser diferente de 1.");
@@ -263,18 +259,38 @@ namespace MathInter
     {
         public object Process(object[] parametros)
         {
-            if (parametros.Length != 2)
-                throw new ArgumentException("A operação com pontos requer exatamento dois parametros.");
+            var split = parametros[0].ToString().Split('.');
+            
+            var targetObject = split[0].Replace("\"", "");
+            var type = targetObject.GetType();
 
-            if (!(parametros[0] is double))
-                throw new ArgumentException("O parâmetro deve ser do tipo double para a operação cosseno.");
+            if (split.Length != 2)
+                throw new ArgumentException("A operação com pontos requer ao menos dois parametros.");
 
-            return Math.Cos((double)parametros[0]);
+            string methodName, methodArgs;
+            if(split[1].Contains('('))
+            {
+                methodName = split[1].Substring(0, split[1].IndexOf('('));
+                methodArgs = split[1].Substring(split[1].IndexOf('(') + 1, split[1].LastIndexOf(')') - split[1].IndexOf('(') - 1);
+
+                var method = type.GetMethod(methodName);
+                if(method != null)
+                    return method.Invoke(targetObject, new object[] { methodArgs });
+            }
+            else
+            {
+                methodName = split[1];
+                var property = type.GetProperty(methodName);
+                if(property != null)
+                    return property.GetValue(targetObject);
+            }
+
+            throw new ArgumentException("O objeto, propriedade ou método não foi identificado.");
         }
 
         public int NParam()
         {
-            return 2;
+            return 1;
         }
 
         public int Precedence()

@@ -4,7 +4,7 @@ public class Program
 {
     static void Main()
     {
-        string expression = "log(8,2)-2*cos(0.3)+\"JOAO\".Count()";
+        string expression = "log(8,2)-2*cos(0.3)+\"JOAO\".Length";
 
         //add soma de strings
         // expression = "\"Guilherme\"+\"Salles\"";
@@ -37,8 +37,8 @@ public class Program
     //     "QUARTO":{"TAMANHO":50}
     // ]}
 
-    //blablabla <%=MODELO.QUARTOS[1].TAMANHO%> -result: blablabla 30 M^2
-    //<%for(x, MODELO.QUARTOS)%> blablabla <%=x.TAMANHO%> <%\for%> 
+    //blablabla <%=COMODOS.QUARTOS[1].TAMANHO%> -result: blablabla 30 M^2
+    //<%for(x, COMODOS.QUARTOS)%> blablabla <%=x.TAMANHO%> <%\for%> 
     //saída:
         //blablabla 30 - (Quarto 1)
         //blablabla 40 - (Quarto 2)

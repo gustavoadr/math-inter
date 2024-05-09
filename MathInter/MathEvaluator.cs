@@ -9,10 +9,10 @@ public class MathEvaluator
 
     public MathEvaluator(string expression)
     {
-        Expression = expression.Replace(" ", "");
+        Expression = expression.Trim();
     }
 
-     public double Evaluate() //log(8,2) - 2 * cos(0.3) + "Joao".Count()
+     public object Evaluate() //log(8,2) - 2 * cos(0.3) + "Joao".Count()
     {
         List<string> tokens = Tokenize(Expression);
 
@@ -22,20 +22,14 @@ public class MathEvaluator
         foreach (string token in tokens)
         {
             if (double.TryParse(token, NumberStyles.Any, CultureInfo.InvariantCulture, out double number))
-            {
                 operands.Push(number);
-            }
             else if (token == "(")
-            {
                 operators.Push("(");
-            }
             else if (token == ")")
             {
-                // If token is ')', evaluate the expression inside parentheses
                 while (operators.Count > 0 && operators.Peek() != "(")
                     EvaluateOperation(operands, operators);
 
-                // Remove '(' from the operator stack
                 if (operators.Count > 0 && operators.Peek() == "(")
                     operators.Pop();
                 else
@@ -43,23 +37,19 @@ public class MathEvaluator
             }
             else if (Operations.ContainsKey(token))
             {
-                while (operators.Count > 0 && Operations[token].Precedence() <= Operations[operators.Peek()].Precedence())
+                while (operators.Count > 0 && Operations.ContainsKey(operators.Peek()) && Operations[token].Precedence() <= Operations[operators.Peek()].Precedence())
                     EvaluateOperation(operands, operators);
 
                 operators.Push(token);
             }
-            else if (Operations.ContainsKey(token))
-            {
-                operators.Push(token);
-            }
             else
-                throw new ArgumentException($"Invalid token: {token}");
+                operands.Push(token);
         }
 
         while (operators.Count > 0)
             EvaluateOperation(operands, operators);
 
-        return 1;
+        return operands.Pop();
     }
 
     private List<string> Tokenize(string expression)
@@ -72,8 +62,26 @@ public class MathEvaluator
             char c = expression[i];
 
             if ((c == '-' || c == '+') && (i == 0 || expression[i - 1] == '(' || Operations.ContainsKey(expression[i - 1].ToString())))
-            {
                 currentToken += c;
+            else if (c == '.')
+            {
+                if(currentToken.Length > 0 && currentToken[currentToken.Length - 1] == '"')
+                {
+                    do
+                    {
+                        currentToken += c;
+                        if(++i >= expression.Length)
+                            break;
+                        c = expression[i];
+                    }
+                    while(!Operations.ContainsKey(c.ToString()));
+                    
+                    tokens.Add(".");
+                    tokens.Add(currentToken);
+                    currentToken = "";
+                }
+                else
+                    currentToken += c;
             }
             else if (c == '(' || c == ')' || Operations.ContainsKey(c.ToString()))
             {
@@ -84,16 +92,7 @@ public class MathEvaluator
                 }
                 tokens.Add(c.ToString());
             }
-            else if (c == '.')
-            {
-                if(currentToken[currentToken.Length - 1] == '"')
-                {
-                    tokens.Add(currentToken);
-                    currentToken = "";
-                }else
-                    currentToken += c;
-            }
-            else if (char.IsWhiteSpace(c) || c == ',')
+            else if (c == ',')
             {
                 if (currentToken != "")
                 {
@@ -128,7 +127,11 @@ public class MathEvaluator
         {
             FunctionOperation operation = Operations[op];
             
-            var result = operation.Process(new object[] {operands.Pop()});
+            var pars = new object[operation.NParam()];
+            for(int i=operation.NParam()-1;i>=0;i--)
+                pars[i] = operands.Pop();
+
+            var result = operation.Process(pars);
             operands.Push(result);
         }
         else if (Operations.ContainsKey(op[0].ToString()))
