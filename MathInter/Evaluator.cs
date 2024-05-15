@@ -2,17 +2,17 @@ using System.Globalization;
 
 namespace MathInter;
 
-public class MathEvaluator
+public class Evaluator
 {
     private string Expression {get; set;}
-    private readonly Dictionary<string, FunctionOperation> Operations = MathExpressions.functionOperations;
+    private readonly Dictionary<string, FunctionOperation> Operations = Expressions.functionOperations;
 
-    public MathEvaluator(string expression)
+    public Evaluator(string expression)
     {
         Expression = expression.Trim();
     }
 
-     public object Evaluate() //log(8,2) - 2 * cos(0.3) + "Joao".Count()
+    public object Evaluate() 
     {
         List<string> tokens = Tokenize(Expression);
 

@@ -1,0 +1,53 @@
+using System;
+using Amazon;
+using Amazon.RDS;
+using Amazon.RDS.Model;
+
+class Program
+{
+    static async System.Threading.Tasks.Task Main(string[] args)
+    {
+        // Configurações da AWS
+        var awsAccessKeyId = <%=AWSRDS.AwsAccessKeyId%>;
+        var awsSecretAccessKey = <%=AWSRDS.AwsSecretAccessKey%>;
+        var region = <%=AWSRDS.RegionEndpoint%>;
+
+        // Configuração do cliente RDS
+        var rdsClient = new AmazonRDSClient(awsAccessKeyId, awsSecretAccessKey, region);
+
+        // Parâmetros para criação do banco de dados RDS
+        var dbInstanceIdentifier = <%=AWSRDS.DBInstanceIdentifier%>;
+        var dbInstanceClass = <%=AWSRDS.DBInstanceClass%>;
+        var engine = <%=AWSRDS.Engine%>;
+        var masterUsername = <%=AWSRDS.MasterUsername%>;
+        var masterPassword = <%=AWSRDS.MasterPassword%>;
+        var dbName = <%=AWSRDS.DBName%>;
+
+        // Configuração do request para criar o banco de dados
+        var request = new CreateDBInstanceRequest
+        {
+            DBInstanceIdentifier = dbInstanceIdentifier,
+            DBInstanceClass = dbInstanceClass,
+            Engine = engine,
+            MasterUsername = masterUsername,
+            MasterUserPassword = masterPassword,
+            DBName = dbName,
+            AllocatedStorage = 20, // Tamanho do armazenamento em GB
+            MultiAZ = false, // Configuração de zona de disponibilidade múltipla
+            BackupRetentionPeriod = 7, // Período de retenção dos backups em dias
+            PreferredBackupWindow = "00:00-01:00", // Janela preferida para os backups
+            PubliclyAccessible = true // Define se o banco de dados é acessível publicamente
+        };
+
+        try
+        {
+            // Executando a criação do banco de dados
+            var response = await rdsClient.CreateDBInstanceAsync(request);
+            Console.WriteLine("Banco de dados criado com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ocorreu um erro ao criar o banco de dados: {ex.Message}");
+        }
+    }
+}

@@ -1,13 +1,11 @@
-using System.ComponentModel;
-
 namespace MathInter;
 
-public static class MathExpressions
+public static class Expressions
 {
     public static readonly Dictionary<string, FunctionOperation> functionOperations;
     public static readonly Dictionary<string, int> precedence;
 
-    static MathExpressions()
+    static Expressions()
     {
         functionOperations = new ();
         
