@@ -3,7 +3,7 @@ namespace MathInter;
 public static class Expressions
 {
     public static readonly Dictionary<string, FunctionOperation> functionOperations;
-    public static readonly Dictionary<string, int> precedence;
+    // public static readonly Dictionary<string, int> precedence;
 
     static Expressions()
     {

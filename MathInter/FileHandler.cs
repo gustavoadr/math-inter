@@ -19,18 +19,63 @@ namespace MathInter
                 List<string> fileLines = File.ReadLines(FilePath).ToList();
 
                 FileHandler output = new FileHandler(outputPath);
-                output.CreateFile();
+                
+                if(!File.Exists(outputPath))
+                    output.CreateFile();
 
                 foreach(var line in fileLines)
                 {
-                    var result = new Evaluator(line).Evaluate();
-                    output.AppendToFile(result.ToString() + "\n");
+                    var result = FindTaggedElement(line);
+                    output.AppendToFile(result.ToString());
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
+        }
+
+        private static string FindTaggedElement(string line)
+        {
+            if(!line.Contains("<%"))
+                return line;
+
+            var solvedExpression = string.Empty;
+            var expression = string.Empty;
+            
+            var isTagged = false;
+            var directReference = false;
+
+            for(int i=0; i<line.Count();i++)
+            {
+                if(line[i] == '<' &&  line[i+1] == '%')
+                {
+                    isTagged = true;
+                    ++i;
+                    
+                    if(line[i+1] == '=')
+                    {
+                        ++i;
+                        directReference = true;
+                    }
+                }
+                else if(line[i] == '%' && line[i+1] == '>')
+                {
+                    //todo: avaliar expressão direta ou expressão regular C# (<%=AwsAccessKeyId%> ou <%for...%>...<%/>)
+                    if(!string.IsNullOrWhiteSpace(expression))
+                        solvedExpression += new Evaluator(expression).Evaluate().ToString();
+                    
+                    directReference = false;
+                    expression = string.Empty;
+                    isTagged = false;
+                    ++i;
+                }
+                else if(isTagged)
+                    expression += line[i];
+                else
+                    solvedExpression += line[i];
+            }
+            return solvedExpression;
         }
 
         private void CreateFile()
@@ -55,39 +100,6 @@ namespace MathInter
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
-        }
-
-        private static string FindTagElement(string line)
-        {
-            if(!line.Contains("<%"))
-                return line;
-
-            var solvedExpression = string.Empty;
-            var expression = string.Empty;
-            var isTagged = false;
-            
-            for(int i=0; i<line.Count();i++)
-            {
-                if(line[i] == '<' &&  line[i+1] == '%')
-                {
-                    isTagged = true;
-                    ++i;
-                }
-                else if(line[i] == '%' && line[i+1] == '>')
-                {
-                    if(string.IsNullOrWhiteSpace(expression))
-                        solvedExpression += new Evaluator(expression).Evaluate().ToString();
-                    
-                    expression = string.Empty;
-                    isTagged = false;
-                    ++i;
-                }
-                else if(isTagged)
-                    expression += line[i];
-                else
-                    solvedExpression += line[i];
-            }
-            return solvedExpression;
         }
     }
 }
