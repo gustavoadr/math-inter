@@ -3,7 +3,6 @@ namespace MathInter;
 public static class Expressions
 {
     public static readonly Dictionary<string, FunctionOperation> functionOperations;
-    // public static readonly Dictionary<string, int> precedence;
 
     static Expressions()
     {
@@ -19,8 +18,6 @@ public static class Expressions
         Add(new Cos());
         Add(new Log());
         Add(new Dot());
-
-        // Add(new Count());
     }
 
     public static void Add(FunctionOperation functionOperation)

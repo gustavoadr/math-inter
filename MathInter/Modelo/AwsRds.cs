@@ -1,4 +1,4 @@
-namespace MathInter.Source
+namespace MathInter.Modelo
 {
     public class AwsRds
     {
