@@ -63,7 +63,7 @@ namespace MathInter
                 {
                     //todo: avaliar expressão direta ou expressão regular C# (<%=AwsAccessKeyId%> ou <%for...%>...<%/>)
                     if(!string.IsNullOrWhiteSpace(expression))
-                        solvedExpression += new Evaluator(expression).Evaluate().ToString();
+                        solvedExpression += new EvaluatorOld(expression).Evaluate().ToString();
                     
                     directReference = false;
                     expression = string.Empty;

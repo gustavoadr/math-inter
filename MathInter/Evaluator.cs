@@ -1,157 +1,131 @@
 using System.Globalization;
+using System.Text;
 
-namespace MathInter;
-
-public class Evaluator
+namespace MathInter
 {
-    private string Expression {get; set;}
-    private readonly Dictionary<string, FunctionOperation> Operations = Expressions.functionOperations;
-
-    public Evaluator(string expression)
+    public class Evaluator
     {
-        Expression = expression.Trim();
-    }
+        private string Expression {get; set;}
+        private readonly Dictionary<string, FunctionOperation> Operations = Expressions.functionOperations;
 
-    public object Evaluate() 
-    {
-        List<string> tokens = Tokenize(Expression);
-
-        Stack<object> operands = new Stack<object>();
-        Stack<string> operators = new Stack<string>();
-
-        foreach (string token in tokens)
+        public Evaluator(string expression)
         {
-            if (double.TryParse(token, NumberStyles.Any, CultureInfo.InvariantCulture, out double number))
-                operands.Push(number);
-            else if (token == "(")
-                operators.Push("(");
-            else if (token == ")")
-            {
-                while (operators.Count > 0 && operators.Peek() != "(")
-                    EvaluateOperation(operands, operators);
-
-                if (operators.Count > 0 && operators.Peek() == "(")
-                    operators.Pop();
-                else
-                    throw new ArgumentException("Invalid expression: mismatched parentheses");
-            }
-            else if (Operations.ContainsKey(token))
-            {
-                while (operators.Count > 0 && Operations.ContainsKey(operators.Peek()) && Operations[token].Precedence() <= Operations[operators.Peek()].Precedence())
-                    EvaluateOperation(operands, operators);
-
-                operators.Push(token);
-            }
-            else
-                operands.Push(token);
+            Expression = expression.Trim();
         }
 
-        while (operators.Count > 0)
-            EvaluateOperation(operands, operators);
-
-        return operands.Pop();
-    }
-
-    private List<string> Tokenize(string expression)
-    {
-        List<string> tokens = new ();
-        string currentToken = "";
-
-        for (int i = 0; i < expression.Length; i++)
+        public object Evaluate()
         {
-            char c = expression[i];
+            var tokens = InfixToPostfix().Split(' ');
+            var stack = new Stack<object>();
 
-            if ((c == '-' || c == '+') && (i == 0 || expression[i - 1] == '(' || Operations.ContainsKey(expression[i - 1].ToString())))
-                currentToken += c;
-            else if (c == '.')
+            foreach (var token in tokens)
             {
-                if(currentToken.Length > 0 && currentToken[currentToken.Length - 1] == '"')
+                if (double.TryParse(token, NumberStyles.Any, CultureInfo.InvariantCulture, out double number))
+                    stack.Push(number);
+                else if(Operations.ContainsKey(token))
                 {
-                    do
-                    {
-                        currentToken += c;
-                        if(++i >= expression.Length)
-                            break;
-                        c = expression[i];
-                    }
-                    while(!Operations.ContainsKey(c.ToString()));
+                    FunctionOperation operation = Operations[token];
+                    var parameters = new object[operation.NParam()];
                     
-                    tokens.Add(".");
-                    tokens.Add(currentToken);
-                    currentToken = "";
+                    for(int i = operation.NParam() - 1; i >= 0; i--)
+                        parameters[i] = stack.Pop();
+
+                    var result = operation.Process(parameters);
+                    stack.Push(result);
                 }
                 else
-                    currentToken += c;
+                    throw new InvalidOperationException($"Operador desconhecido: {token}");
             }
-            else if (c == '(' || c == ')' || Operations.ContainsKey(c.ToString()))
-            {
-                if (currentToken != "")
-                {
-                    tokens.Add(currentToken);
-                    currentToken = "";
-                }
-                tokens.Add(c.ToString());
-            }
-            else if (c == ',')
-            {
-                if (currentToken != "")
-                {
-                    tokens.Add(currentToken);
-                    currentToken = "";
-                }
-            }
-            else
-                currentToken += c;
+
+            if (stack.Count != 1)
+                throw new InvalidOperationException("Expressão RPN inválida.");
+
+            return stack.Pop();
         }
 
-        if (currentToken != "")
-            tokens.Add(currentToken);
-
-        return tokens;
-    }
-
-    private void EvaluateOperation(Stack<object> operands, Stack<string> operators)
-    {
-        if (operands.Count < 1 || operators.Count == 0)
-            throw new ArgumentException("Invalid expression");
-
-        string op = operators.Pop();
-
-        if (op == "(")
-            return;
-
-        if (op == ")")
-            throw new ArgumentException("Invalid expression");
-
-        if (Operations.ContainsKey(op))
+        public string InfixToPostfix()
         {
-            FunctionOperation operation = Operations[op];
-            
-            var pars = new object[operation.NParam()];
-            for(int i=operation.NParam()-1;i>=0;i--)
-                pars[i] = operands.Pop();
+            List<string> tokens = Tokenize(Expression);
+            Stack<string> stack = new Stack<string>();
+            StringBuilder result = new StringBuilder();
 
-            var result = operation.Process(pars);
-            operands.Push(result);
+            foreach (string token in tokens)
+            {
+                if (Operations.ContainsKey(token) && Operations[token].Precedence() == 4)
+                {
+                    stack.Push(token);
+                }
+                else if (token == ",")
+                {
+                    while (stack.Count > 0 && stack.Peek() != "(")
+                        result.Append(stack.Pop());
+                }
+                else if(Operations.ContainsKey(token)) 
+                {
+                    while (stack.Count > 0 && Operations.ContainsKey(stack.Peek()))
+                    {
+                        string topOp = stack.Peek();
+                        if ((Operations[token].Precedence() < 4 && Operations[token].Precedence() < Operations[topOp].Precedence()) ||
+                            (Operations[token].Precedence() == 4 && Operations[token].Precedence() <= Operations[topOp].Precedence()))
+                        {
+                            result.Append(stack.Pop() + " ");
+                        }
+                        else
+                            break;
+                    }
+                    
+                    stack.Push(token);
+                }
+                else if (token == "(")
+                {
+                    stack.Push(token);
+                }
+                else if (token == ")")
+                {
+                    while (stack.Count > 0 && stack.Peek() != "(")
+                        result.Append(stack.Pop() + " ");
+                    
+                    if(stack.Count > 0 && stack.Peek() == "(")
+                        stack.Pop();
+                }
+                else
+                    result.Append(token + " ");
+            }
+
+            while (stack.Count > 0)
+                result.Append(stack.Pop() + " ");
+
+            return result.ToString().Trim();
         }
-        else if (Operations.ContainsKey(op[0].ToString()))
+
+        public static List<string> Tokenize(string expression)
         {
-            if (operands.Count < 2)
-                throw new ArgumentException("Invalid expression");
+            var tokens = new List<string>();
+            var token = new StringBuilder();
 
-            var operand2 = operands.Pop();
-            
-            // Check if there are unary operations pending and evaluate them first
-            while (operators.Count > 0 && Operations.ContainsKey(operators.Peek()))
-                EvaluateOperation(operands, operators);
-            
-            var operand1 = operands.Pop();
-            FunctionOperation operation = Operations[op[0].ToString()];
-            object[] parametros = new object[] { operand1, operand2 };
-            var result = operation.Process(parametros);
-            operands.Push(result);
+            for (int i = 0; i < expression.Length; i++)
+            {
+                char c = expression[i];
+
+                if (Char.IsDigit(c) || c == '"' || (c == '.' && token.Length > 0 && Char.IsDigit(token[0])))
+                    token.Append(c);
+                else if (Char.IsLetter(c))
+                    token.Append(c);
+                else
+                {
+                    if (token.Length > 0)
+                    {
+                        tokens.Add(token.ToString());
+                        token.Clear();
+                    }
+                    tokens.Add(c.ToString());
+                }
+            }
+
+            if (token.Length > 0)
+                tokens.Add(token.ToString());
+
+            return tokens;
         }
-        else
-            throw new ArgumentException($"Invalid operator or function: {op}");
     }
 }
