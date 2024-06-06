@@ -34,7 +34,7 @@ namespace MathInter
                     stack.Push(result);
                 }
                 else
-                    throw new InvalidOperationException($"Operador desconhecido: {token}");
+                    stack.Push(token);
             }
 
             if (stack.Count != 1)
@@ -98,7 +98,7 @@ namespace MathInter
             return result.ToString().Trim();
         }
 
-        public static List<string> Tokenize(string expression)
+        public List<string> Tokenize(string expression)
         {
             var tokens = new List<string>();
             var token = new StringBuilder();
@@ -107,9 +107,13 @@ namespace MathInter
             {
                 char c = expression[i];
 
-                if (Char.IsDigit(c) || c == '"' || (c == '.' && token.Length > 0 && Char.IsDigit(token[0])))
+                if (char.IsDigit(c) || c == '"' || (c == '.' && token.Length > 0 && char.IsDigit(token[0])))
                     token.Append(c);
-                else if (Char.IsLetter(c))
+                else if (char.IsLetter(c))
+                    token.Append(c);
+                else if (c == '(' && token.Length > 0 && !Operations.ContainsKey(token.ToString()))
+                    token.Append(c);
+                else if ((c is ',' or ')') && token.Length > 0 && token.ToString().Contains('('))
                     token.Append(c);
                 else
                 {
@@ -126,6 +130,14 @@ namespace MathInter
                 tokens.Add(token.ToString());
 
             return tokens;
+        }
+
+        public bool Any()
+        {
+            foreach(var opKey in Operations.Keys)
+                if(Expression.Contains(opKey))
+                    return true;
+            return false;
         }
     }
 }

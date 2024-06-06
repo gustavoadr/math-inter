@@ -23,7 +23,7 @@ namespace MathInter
             {
                 var par1 = parametros[0].ToString().Replace("\"", "");
                 var par2 = parametros[1].ToString().Replace("\"", "");
-                return par1+par2;
+                return '"' + par1 + par2 + '"';
             }
         }
 
@@ -257,32 +257,65 @@ namespace MathInter
 
     public class Dot : FunctionOperation
     {
-        public object Process(object[] parametros)
+        public object Process(object[] parameters)
         {
-            var split = parametros[0].ToString().Split('.');
-            
-            var targetObject = split[0].Replace("\"", "");
-            var type = targetObject.GetType();
-
-            if (split.Length != 2)
+            if (parameters.Length != 2)
                 throw new ArgumentException("A operação com pontos requer ao menos dois parametros.");
-
-            string methodName, methodArgs;
-            if(split[1].Contains('('))
+            
+            Type type = null;
+            if(parameters[0].ToString()[0] == '"')
             {
-                methodName = split[1].Substring(0, split[1].IndexOf('('));
-                methodArgs = split[1].Substring(split[1].IndexOf('(') + 1, split[1].LastIndexOf(')') - split[1].IndexOf('(') - 1);
+                parameters[0] = parameters[0].ToString().Replace("\"", "");
+                type = typeof(string);
+            }
 
-                var method = type.GetMethod(methodName);
-                if(method != null)
-                    return method.Invoke(targetObject, new object[] { methodArgs });
+            string methodName;
+            object[] methodArgs = null;
+
+            if(parameters[1].ToString().Contains('('))
+            {
+                var split = parameters[1].ToString().Split('(');
+                methodName = split[0];
+                
+                split[1] = split[1].Substring(0, split[1].Length - 1);
+
+                var args = split[1].Split(',');
+                methodArgs = new object[args.Length];
+                int i = 0;
+
+                foreach(var arg in args)
+                {
+                    var eval = new Evaluator(arg);
+                    object aux;
+
+                    if(eval.Any())
+                        aux = eval.Evaluate();
+                    else
+                        aux = arg;
+                    
+                    methodArgs[i++] = Int32.TryParse(arg, out var result) ? result : arg;
+                }
+            }
+            else
+                methodName = parameters[1].ToString();
+
+            if(methodArgs == null)
+            {
+                var property = type.GetProperty(methodName);
+                if(property != null)
+                    return property.GetValue(parameters[0]);
             }
             else
             {
-                methodName = split[1];
-                var property = type.GetProperty(methodName);
-                if(property != null)
-                    return property.GetValue(targetObject);
+                Type[] argTypes = new Type[methodArgs.Length];
+                int i = 0;
+                foreach(var arg in methodArgs)
+                    argTypes[i++] = arg.GetType();
+
+                var method = type.GetMethod(methodName, argTypes);
+                
+                if(method != null)
+                    return method.Invoke(parameters[0], methodArgs);
             }
 
             throw new ArgumentException("O objeto, propriedade ou método não foi identificado.");
@@ -290,7 +323,7 @@ namespace MathInter
 
         public int NParam()
         {
-            return 1;
+            return 2;
         }
 
         public int Precedence()

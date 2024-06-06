@@ -16,15 +16,15 @@ public class Program
 
     static void Main()
     {
-        string expression = "log(8,2)-2*cos(0.3)+\"JOAO\".Length";
-        //string expression = "sen(3.5+4.2)*cos(2/(1-5))+log(10,2)";
-        //string expression = "(\"Guilherme\"+\"Salles\").Substring(8,3)";
+        //string expression = "sen(3.5+4.2)*cos(2/(1-5))+log(10,2)"; // OK
+        //string expression = "log(8,2)-2*cos(0.3)+\"JOAO\".Length"; // OK
+        string expression = "(\"Guilherme\"+\"Salles\").Substring(8,3)"; // OK
         var result = new Evaluator(expression).Evaluate();
         Console.WriteLine($"Result of expression '{expression}': {result}");
 
         var basePath = "D:/gusta/Documents/Estudos/math-inter/Template";
 
         var file = new FileHandler($"{basePath}/RDS.tpt");
-        file.EvaluateFile($"{basePath}/Output.cs");
+        //file.EvaluateFile($"{basePath}/Output.cs");
     }
 }
