@@ -262,15 +262,35 @@ namespace MathInter
             if (parameters.Length != 2)
                 throw new ArgumentException("A operação com pontos requer ao menos dois parametros.");
             
-            Type type = null;
             if(parameters[0].ToString()[0] == '"')
             {
                 parameters[0] = parameters[0].ToString().Replace("\"", "");
-                type = typeof(string);
+                return ResolveString(parameters);
             }
 
+            throw new ArgumentException("O objeto, propriedade ou método não foi identificado.");
+        }
+
+        public int NParam()
+        {
+            return 2;
+        }
+
+        public int Precedence()
+        {
+            return 5;
+        }
+
+        public string GetName()
+        {
+            return ".";
+        }
+
+        private object ResolveString(object[] parameters)
+        {
             string methodName;
             object[] methodArgs = null;
+            Type type = typeof(string);
 
             if(parameters[1].ToString().Contains('('))
             {
@@ -319,21 +339,6 @@ namespace MathInter
             }
 
             throw new ArgumentException("O objeto, propriedade ou método não foi identificado.");
-        }
-
-        public int NParam()
-        {
-            return 2;
-        }
-
-        public int Precedence()
-        {
-            return 5;
-        }
-
-        public string GetName()
-        {
-            return ".";
         }
     }
 }

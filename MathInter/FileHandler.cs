@@ -11,27 +11,17 @@ namespace MathInter
 
         public void EvaluateFile(string outputPath)
         {
-            try
+            if (!File.Exists(FilePath))
+                throw new FileNotFoundException($"The file at path {FilePath} does not exist.");
+
+            List<string> fileLines = File.ReadLines(FilePath).ToList();
+
+            foreach(var line in fileLines)
             {
-                if (!File.Exists(FilePath))
-                    throw new FileNotFoundException($"The file at path {FilePath} does not exist.");
+                var result = FindTaggedElement(line);
 
-                List<string> fileLines = File.ReadLines(FilePath).ToList();
-
-                FileHandler output = new FileHandler(outputPath);
-                
-                if(!File.Exists(outputPath))
-                    output.CreateFile();
-
-                foreach(var line in fileLines)
-                {
-                    var result = FindTaggedElement(line);
-                    output.AppendToFile(result.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
+                using (StreamWriter sw = new StreamWriter(outputPath, true))
+                    sw.WriteLine(result);
             }
         }
 
@@ -76,30 +66,6 @@ namespace MathInter
                     solvedExpression += line[i];
             }
             return solvedExpression;
-        }
-
-        private void CreateFile()
-        {
-            try
-            {
-                FileStream fs = File.Create(FilePath);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-            }
-        }
-
-        private void AppendToFile(string content)
-        {
-            try
-            {
-                File.AppendAllText(FilePath, content + Environment.NewLine);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-            }
         }
     }
 }
