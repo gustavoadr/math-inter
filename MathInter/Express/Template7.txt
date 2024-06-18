@@ -1,0 +1,15 @@
+﻿<#save()#>
+Bom dia TRIM_NL
+<#for(i,0,6)#>
+	TRIM_TAB
+	<#=i#>: <#if(i==2)#>Guilherme<#else#>Salles<#/#>	TRIM_TAB 
+	<#keep("TTT"+i)#>
+	TT é uma bicicleta contra relógio.
+	<#/#>
+	TRIM_NL
+<#/#>
+Boa tarde TRIM_NL
+<#keep("TTT")#>
+	TT é uma bicicleta contra relógio.
+<#/#>
+<#/#>

@@ -18,7 +18,7 @@ public class Program
 
     static void Main()
     {
-        Main2();
+        //Main2();
         //string expression = "sen(3.5+4.2)*cos(2/(1-5))+log(10,2)"; // OK
         //string expression = "log(8,2)-2*cos(0.3)+\"JOAO\".Length"; // OK
         //string expression = "(Guilherme).Substring(0+4,3)"; // OK
@@ -32,6 +32,8 @@ public class Program
         // var file = new FileHandler($"{basePath}/RDS.tpt");
         
         // file.EvaluateFile($"{basePath}/Output.cs");
+        //todo:propor pro José usar o gerador pra gerar o barramento
+        Teste.Run();
     }
 
     static void Main2()

@@ -1,0 +1,9 @@
+﻿<#save()#>
+	Viagem: <#=MODEL.titulo#> TRIM_NL
+	<#for(i,0,(MODEL.passeios).Count)#>
+		TRIM_TAB 
+		<#=i#>: <#=MODEL.passeios[i].titulo#> [duração: <#=MODEL.passeios[i].duracao#>] TRIM_NL
+		TRIM_TAB TRIM_TAB 
+		saída em <#=MODEL.passeios[i].saida.ToString()#> TRIM_NL
+	<#/#>
+<#/#>

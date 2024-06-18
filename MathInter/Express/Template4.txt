@@ -1,0 +1,7 @@
+﻿<#save()#>
+	<#for(i,0,6)#>
+	TRIM_TAB
+	<#if(i==2)#>Guilherme<#else#>Salles<#/#> abcdefghijklmnopqrztuvxz[<#=i#>]=<#="abcdefghijklmnopqrztuvxz"[i]#>
+	TRIM_NL
+<#/#>
+<#/#>
