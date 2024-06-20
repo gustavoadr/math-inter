@@ -1,7 +1,7 @@
 ﻿Bom dia TRIM_NL
 <#for(i,0,6)#>
 Bom dia TRIM_NL
-	<#Template5="Template5-"+i#>
+	<#Template5="Template05-"+i#>
 	<#save()#>
 		TRIM_TAB
 		<#=i#>: <#if(i==2)#>Guilherme<#else#>Salles<#/#>

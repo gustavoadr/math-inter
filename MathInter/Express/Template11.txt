@@ -1,0 +1,9 @@
+﻿<#function soma(a, b)#>
+	<#=a+b#>
+<#/#>
+<#function posicaoStr(str, a, b)#>
+	<#=str[soma(a, b)]#>
+<#/#>
+<#save()#>
+	<#=posicaoStr("abcdef", soma(1,2), -1)#>
+<#/#>
