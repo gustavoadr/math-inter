@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-namespace GerSegCond.Console.Express;
+namespace Agilis.CodeG;
 
 internal class CodeGenerator
 {
@@ -103,29 +103,29 @@ internal class CodeGenerator
             else if (ehFor(token))
             {
                 int i = token.LastIndexOf(')');
-                ret.Append($"{token.Substring(2, i - 2)}, ");
+                ret.Append($"{token.Substring(2, i - 2)}, {{");
                 stack.Push("for");
             }
             else if (ehKeep(token))
             {
                 int i = token.LastIndexOf(')');
-                ret.Append($"{token.Substring(2, i - 2)}, \"{outputDir}\\\"+replace(\"{fileName}\"), ");
+                ret.Append($"{token.Substring(2, i - 2)}, \"{outputDir}\\\"+replace(\"{fileName}\"), {{");
                 stack.Push("keep");
             }
             else if (ehSave(token))
             {
-                ret.Append($"saveFile(\"{outputDir}\\\"+replace(\"{fileName}\"), ");
+                ret.Append($"save(\"{outputDir}\\\"+replace(\"{fileName}\"), {{");
                 stack.Push("save");
             }
             else if (ehIf(token))
             {
                 int i = token.LastIndexOf(')');
-                ret.Append($"{token.Substring(2, i - 2)}, ");
+                ret.Append($"{token.Substring(2, i - 2)}, {{");
                 stack.Push("if");
             }
             else if (ehElse(token))
             {
-                ret.Append(", ");
+                ret.Append("}, {");
                 stack.Push("else");
             }
             else if (ehPrint(token))
@@ -141,21 +141,34 @@ internal class CodeGenerator
                 string v2 = v.Substring(i+1);
                 ret.Append($"{v1}={v2};");
             }
+            else if (ehFunction(token))
+            {
+                int i = token.IndexOf("function ")+9;
+                int ii = token.IndexOf('(');
+                int iii = token.LastIndexOf(')');
+                string fName = token.Substring(i, ii-i);
+                string[] parametros = token.Substring(ii+1, iii-ii-1).Split(',');
+                ret.Append("function(").Append(fName);
+                foreach(string s in parametros) 
+                    ret.Append($", \"{s.Trim()}\""); 
+                ret.Append(", {");
+                stack.Push("function");
+            }
             else if (ehFechamento(token))
             {
                 string comando = stack.Pop();
-                if (comando == "for" || comando == "save" || comando == "keep")
+                if (comando == "for" || comando == "save" || comando == "keep" || comando == "function")
                 {
-                    ret.Append(");");
+                    ret.Append("});");
                 }
                 else if (comando == "if")
                 {
-                    ret.Append(", \"\");");
+                    ret.Append("}, {});");
                 }
                 else if (comando == "else")
                 {
                     stack.Pop();
-                    ret.Append(");");
+                    ret.Append("});");
                 }
             }
         }
@@ -168,6 +181,10 @@ internal class CodeGenerator
     private static bool ehFor(string val)
     {
         return val.Contains("for");
+    }
+    private static bool ehFunction(string val)
+    {
+        return val.Contains("function");
     }
     private static bool ehKeep(string val)
     {
